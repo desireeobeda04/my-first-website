@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My First Website</title>
+  <!-- Load Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@500;700&family=Sniglet:wght@800&display=swap" rel="stylesheet">
+
+  <style>
+    @keyframes colorShift {
+      0% { background-color: #ff9a9e; }
+      33% { background-color: #a1c4fd; }
+      66% { background-color: #c2e9fb; }
+      100% { background-color: #ff9a9e; }
+    }
+
+    @keyframes flashRed {
+      0%, 100% { background-color: #000; }
+      50% { background-color: #8b0000; }
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-120px) scale(1.3); opacity: 0; }
+    }
+
+    body { 
+      font-family: 'Quicksand', sans-serif; 
+      text-align: center; 
+      animation: colorShift 10s infinite alternate ease-in-out;
+      padding: 20px; 
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      max-width: 320px;
+      width: 85%;
+      position: relative;
+    }
+    
+    h1 { 
+      font-family: 'Pacifico', cursive;
+      color: #333; 
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 18px;
+      color: #4a4a4a;
+      font-weight: 500;
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    button { 
+      font-family: 'Sniglet', cursive;
+      background: #007bff; 
+      color: white; 
+      border: none; 
+      padding: 12px 24px; 
+      border-radius: 20px; 
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.03);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Win Screen Styles */
+    .win-card h1 {
+      color: #8e44ad;
+      font-size: 36px;
+    }
+
+    .heart-bg {
+      font-size: 60px;
+      margin: 10px 0;
+      display: inline-block;
+      animation: floatUp 2s infinite ease-in-out;
+    }
+
+    /* Jumpscare Fullscreen Overlay */
+    #jumpscare {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      animation: flashRed 0.1s infinite, shake 0.1s infinite;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #jumpscare .scary-face {
+      font-size: 110px;
+      margin: 0;
+      line-height: 1;
+    }
+
+    #jumpscare h1 {
+      color: #ff0000;
+      font-size: 48px;
+      font-family: 'Sniglet', cursive;
+      margin: 10px 0;
+      text-shadow: 0 0 10px #ff0000;
+    }
+
+    #jumpscare p {
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page 1 -->
+  <div id="page1" class="card">
+    <h1>Hello, My Love!</h1>
+    <p>I built this website on my phone hehehe. Ikaw na po humusga.</p>
+    <button onclick="goToPage2()">Click Me</button>
+  </div>
+
+  <!-- Page 2 -->
+  <div id="page2" class="card hidden">
+    <h1>I have a question for you...</h1>
+    <div class="btn-group">
+      <button onclick="goToPage3()">Sure</button>
+      <button onclick="alert(':( ?')">Okay</button>
+      <button onclick="alert('you don\'t love me :(')">...</button>
+    </div>
+  </div>
+
+  <!-- Page 3: Color Quiz -->
+  <div id="page3" class="card hidden">
+    <h1>What is my Favorite Color?</h1>
+    <div class="btn-group">
+      <button onclick="goToWinPage()">PURPLE</button>
+      <button onclick="triggerJumpscare()">BLACK</button>
+    </div>
+  </div>
+
+  <!-- Win Page -->
+  <div id="winPage" class="card win-card hidden">
+    <div class="heart-bg">💜✨</div>
+    <h1>Yay! You Win!</h1>
+    <p>You know me so well! Purple is indeed my absolute favorite color! 🎉 💖</p>
+    <button onclick="restartQuiz()" style="background: #8e44ad; margin-top: 15px;">Play Again 🔄</button>
+  </div>
+
+  <!-- Jumpscare Screen -->
+  <div id="jumpscare" class="hidden">
+    <div class="scary-face">👹</div>
+    <h1>WRONG ANSWER!!</h1>
+    <p>YOU SHOULD KNOW THIS! 😒</p>
+    <button onclick="resetJumpscare()" style="background: #ff4757;">Try Again 😒</button>
+  </div>
+
+  <script>
+    let audioCtx = null;
+    let screamOsc = null;
+
+    function goToPage2() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      document.getElementById('page1').classList.add('hidden');
+      document.getElementById('page2').classList.remove('hidden');
+    }
+
+    function goToPage3() {
+      alert('okay!! hehehe');
+      document.getElementById('page2').classList.add('hidden');
+      document.getElementById('page3').classList.remove('hidden');
+    }
+
+    function goToWinPage() {
+      document.getElementById('page3').classList.add('hidden');
+      document.getElementById('winPage').classList.remove('hidden');
+    }
+
+    function restartQuiz() {
+      document.getElementById('winPage').classList.add('hidden');
+      document.getElementById('page1').classList.remove('hidden');
+    }
+
+    function triggerJumpscare() {
+      document.getElementById('jumpscare').classList.remove('hidden');
+
+      // Play audio screeching sound effect
+      if (audioCtx) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        screamOsc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        screamOsc.type = 'sawtooth';
+        screamOsc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        screamOsc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 1.5);
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+
+        screamOsc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        screamOsc.start();
+      }
+    }
+
+    function resetJumpscare() {
+      document.getElementById('jumpscare').classList.add('hidden');
+      
+      if (screamOsc) {
+        screamOsc.stop();
+        screamOsc.disconnect();
+        screamOsc = null;
+      }
+    }
+  </script>
+
+</body>
+</html>
